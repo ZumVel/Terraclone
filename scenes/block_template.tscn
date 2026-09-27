@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/block_template.gd" id="1_block"]
+[ext_resource type="Resource" path="res://resources/blocks/dirt.tres" id="2_def"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_blk"]
+size = Vector2(16, 16)
+
+[node name="BlockTemplate" type="Node2D"]
+script = ExtResource("1_block")
+def = ExtResource("2_def")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_filter = 1
+
+[node name="Collider" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Collider"]
+shape = SubResource("RectangleShape2D_blk")

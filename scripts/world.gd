@@ -11,8 +11,16 @@ const TILE := 16
 var tiles: PackedByteArray = PackedByteArray()
 var break_flash := Vector2i(-1, -1) # клетка, которую сейчас копают (подсветка)
 var body: StaticBody2D               # тело коллизий (пол/стены мира)
+var camera: Camera2D = null          # камера игрока (внедряется через set_camera)
+
+
+## Внедрение зависимости (слабая связность): игрок сам передаёт свою камеру миру
+func set_camera(c: Camera2D) -> void:
+	camera = c
+
 
 func _ready() -> void:
+	add_to_group("world")
 	body = StaticBody2D.new()
 	add_child(body)
 	generate()
@@ -193,4 +201,3 @@ func _draw() -> void:
 		var col := Color(1, 1, 1, 0.7) if dist <= 5.0 * TILE else Color(1, 0.3, 0.3, 0.5)
 		draw_rect(Rect2(gpos, Vector2(TILE, TILE)), col, false, 1.0)
 
-var camera: Camera2D

@@ -18,7 +18,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 BlockDB="*res://scripts/block_db.gd"
-GameUI="*res://scripts/game_ui.gd"
 
 [display]
 
@@ -53,6 +52,7 @@ jump={
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

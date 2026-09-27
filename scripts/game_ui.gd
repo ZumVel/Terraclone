@@ -1,38 +1,52 @@
 extends CanvasLayer
 
-## HUD: хотбар инвентаря, название выбранного предмета, сообщения-подсказки.
+## HUD (отдельный компонент): хотбар инвентаря, строка статуса, сообщения, список блоков.
+## Узлы InfoLabel / MsgLabel / BlocksLabel находятся в сцене main.tscn — при их отсутствии
+## выводится понятная ошибка (лёгкая диагностика), а не молчаливый крах.
 
 @onready var info_label: Label = $InfoLabel
 @onready var msg_label: Label = $MsgLabel
 @onready var blocks_label: Label = $BlocksLabel
 
-var _player: Player
+var _player: Player = null
 var _hotbar: Control
 var _slots: Array[ColorRect] = []
 var _icons: Array[TextureRect] = []
 var _counts: Array[Label] = []
 var _msg_timer := 0.0
 var _blocks_visible := true
+var _tool_icons := {} # иконки инструментов (кэш)
+
 
 func _ready() -> void:
-	_build_hotbar()
+	var missing := false
+	for pair in [["InfoLabel", info_label], ["MsgLabel", msg_label], ["BlocksLabel", blocks_label]]:
+		if pair[1] == null:
+			missing = true
+			push_error("GameUI: в сцене отсутствует узел %s (CanvasLayer GameUI в main.tscn)" % pair[0])
+	if not missing:
+		_build_hotbar()
 	show_blocks_list()
 
-## Автосвязь с игроком, если сцена ещё не передала ссылку явно
+
+## Явная связь «игрок -> UI» (внедрение зависимости вместо глобального поиска)
 func bind_player(p: Player) -> void:
 	_player = p
 
+
 func _process(delta: float) -> void:
+	if not is_node_ready():
+		return # ждём @onready-узлы (InfoLabel и т.д.)
 	if _player == null:
 		for n in get_tree().get_nodes_in_group("player"):
 			if n is Player and n.inventory != null:
-				_player = n
+				_player = n as Player
 				break
-	if _msg_timer > 0.0:
+	if msg_label != null and _msg_timer > 0.0:
 		_msg_timer -= delta
 		if _msg_timer <= 0.0:
 			msg_label.text = ""
-	if _player != null:
+	if _player != null and info_label != null:
 		_refresh_hotbar(_player.inventory)
 		info_label.text = "Слот %d: %s | Мощь кирки: %d | Добыто: %d" % [
 			_player.inventory.selected + 1,
@@ -41,12 +55,20 @@ func _process(delta: float) -> void:
 			_player.mined_count,
 		]
 
+
 func set_message(text: String) -> void:
+	if msg_label == null:
+		print("[HUD] ", text)
+		return
 	msg_label.text = text
 	_msg_timer = 3.0
 
+
+## Список всех блоков и их характеристик (показывается по клавише E)
 func show_blocks_list() -> void:
-	var lines: Array[String] = ["Блоки (по одному шаблону BlockDef):"]
+	if blocks_label == null:
+		return
+	var lines: Array[String] = ["Блоки (шаблон: block_template.tscn + BlockDef):"]
 	for d in BlockDB.defs:
 		if d.id == 0 or d.id == 10:
 			continue
@@ -54,16 +76,20 @@ func show_blocks_list() -> void:
 			d.display_name, d.pickaxe_power_required, BlockDB.state_name(BlockDB.get_state(d.id))])
 	blocks_label.text = "\n".join(lines)
 
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E:
 		_blocks_visible = not _blocks_visible
-		blocks_label.visible = _blocks_visible
+		if blocks_label != null:
+			blocks_label.visible = _blocks_visible
+
 
 func _selected_name() -> String:
 	var it := _player.inventory.selected_item()
 	if it.is_empty():
 		return "Пусто"
 	return _player.inventory.item_name(int(it.id))
+
 
 func _build_hotbar() -> void:
 	_hotbar = Control.new()
@@ -79,7 +105,7 @@ func _build_hotbar() -> void:
 
 		var border := ColorRect.new()
 		border.color = Color(0.6, 0.6, 0.7, 0.6)
-		border.position = Vector2(i * 42 + 1, 1)
+		border.position = Vector2(1, 1)
 		border.size = Vector2(38, 38)
 		border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		bg.add_child(border)
@@ -89,6 +115,7 @@ func _build_hotbar() -> void:
 		icon.size = Vector2(32, 32)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		bg.add_child(icon)
 
@@ -102,6 +129,7 @@ func _build_hotbar() -> void:
 		_icons.append(icon)
 		_counts.append(cnt)
 
+
 func _refresh_hotbar(inv: Inventory) -> void:
 	for i in inv.SLOT_COUNT:
 		var s = inv.slots[i]
@@ -114,9 +142,8 @@ func _refresh_hotbar(inv: Inventory) -> void:
 			_counts[i].text = str(s.count) if s.count > 1 else ""
 		_slots[i].color = Color(1, 0.9, 0.3, 0.7) if i == inv.selected else Color(0, 0, 0, 0.45)
 
-# Иконки инструментов рисуем процедурно (маленькие картинки)
-static var _tool_icons := {}
 
+## Иконка предмета: блок — своя текстура из BlockDef; инструменты — процедурные картинки
 func _item_icon(id: int) -> Texture2D:
 	match id:
 		Inventory.ITEM_PICKAXE:
@@ -128,8 +155,13 @@ func _item_icon(id: int) -> Texture2D:
 				_tool_icons[id] = _make_tool_icon(true)
 			return _tool_icons[id]
 		_:
-			return BlockDB.get_def(id).texture
+			var d := BlockDB.get_def(id)
+			if d.texture == null:
+				push_warning("GameUI: у блока «%s» нет текстуры — проверьте assets/blocks" % d.display_name)
+			return d.texture
 
+
+# Иконки инструментов рисуем процедурно (маленькие картинки)
 func _make_tool_icon(hammer: bool) -> Texture2D:
 	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
 	img.fill(Color(0, 0, 0, 0))
