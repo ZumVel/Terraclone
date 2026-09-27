@@ -1,0 +1,14 @@
+78098b89c88a74ebe8c20117b8754620
+::res://::1790532488
+icon.svg::CompressedTexture2D::7110954345159266082::1790532110::1790532493::1::::<><><>0<>0<>f6921096420f6faf351d26511b1cdd3a<>res://.godot/imported/icon.svg-218a8f2b3041327d8a5756f3a245f83b.ctex::
+::res://scenes/::1790532354
+main.tscn::PackedScene::-1::1790532463::0::1::::<><><>0<>0<><>::res://scripts/world.gd<>res://scripts/player.gd<>res://scripts/game_ui.gd
+::res://scripts/::1790532327
+block_db.gd::GDScript::3502030658273038366::1790532175::0::1::::<>Node<><>0<>0<><>::
+block_def.gd::GDScript::2470894402627081000::1790532153::0::1::::BlockDef<>Resource<><>0<>0<><>::
+game_ui.gd::GDScript::32003648716763973::1790532439::0::1::::<>CanvasLayer<><>0<>0<><>::
+inventory.gd::GDScript::6551423935321003851::1790532249::0::1::::Inventory<>RefCounted<><>0<>0<><>::
+player.gd::GDScript::8721072825445772324::1790532447::0::1::::Player<>CharacterBody2D<><>0<>0<><>::
+player_sprites.gd::GDScript::505417161488427701::1790532327::0::1::::PlayerSprites<>RefCounted<><>0<>0<><>::
+texture_gen.gd::GDScript::5114276762598519698::1790532153::0::1::::TextureGen<>RefCounted<><>0<>0<><>::
+world.gd::GDScript::1809367612234789402::1790532419::0::1::::World<>Node2D<><>0<>0<><>::
