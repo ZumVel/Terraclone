@@ -1,0 +1,64 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world.gd" id="1_world"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="Script" path="res://scripts/game_ui.gd" id="3_ui"]
+
+[node name="Main" type="Node2D"]
+
+[node name="SkyColor" type="ColorRect" parent="."]
+z_index = -10
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.45, 0.65, 0.9, 1)
+
+[node name="World" type="Node2D" parent="."]
+script = ExtResource("1_world")
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+
+[node name="GameUI" type="CanvasLayer" parent="."]
+script = ExtResource("3_ui")
+
+[node name="InfoLabel" type="Label" parent="GameUI"]
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 700.0
+offset_bottom = 30.0
+theme_override_font_sizes/font_size = 14
+text = "Terraclone"
+
+[node name="BlocksLabel" type="Label" parent="GameUI"]
+offset_left = 8.0
+offset_top = 120.0
+offset_right = 340.0
+offset_bottom = 420.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_font_sizes/font_size = 12
+
+[node name="MsgLabel" type="Label" parent="GameUI"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 40.0
+offset_right = 300.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="HelpLabel" type="Label" parent="GameUI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -360.0
+offset_top = 6.0
+offset_right = -8.0
+offset_bottom = 110.0
+theme_override_font_sizes/font_size = 12
+horizontal_alignment = 2
+text = "A/D — движение, W/Space — прыжок
+ЛКМ (кирка удерживать) — копать
+ПКМ — поставить блок, СКМ — молот (сменить состояние)
+1-9/0 или колёсико — выбор слота
+E — список блоков (характеристики)"
